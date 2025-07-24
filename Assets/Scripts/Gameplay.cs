@@ -2,6 +2,8 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
+using NUnit.Framework;
 
 public class Gameplay : MonoBehaviour
 {
@@ -26,6 +28,10 @@ public class Gameplay : MonoBehaviour
     private int currentAttemps;
     private bool isPlayerTurn;
     private bool gameActive;
+
+    private int computerMinGuess;
+    private int computerMaxGuess;
+    private List<int> computerGuesses;
 
     void InitializeUI()
     {
@@ -66,21 +72,21 @@ public class Gameplay : MonoBehaviour
         if (guess == targetNumber)
         {
             //win
-            gameLog.text += $"{PlayerName} got it right!\n";
+            gameLog.text += $"{PlayerName} got it right!\n <sprite=\"symbols01\" index=61> <sprite=\"usesymbols\" index=21>";
             EndGame();
         }
 
         else if (currentAttemps >= maxAttemps)
         {
             //lose
-            gameLog.text += $"Game Over! The correct number was {targetNumber}\n";
+            gameLog.text += $"Game Over! The correct number was {targetNumber}\n ";
             EndGame();
         }
 
         else
         {
             //Wrong guess - give hint
-            string hint = guess < targetNumber ? "Top Low" : "Too High";
+            string hint = guess < targetNumber ? "Top Low <sprite=\"symbols01\" index=30> <sprite=\"usesymbols\" index=24>" : "Too High <sprite=\"symbols01\" index=30> <sprite=\"usesymbols\" index=24>";
             gameLog.text += $"{hint}\n";
 
             //Switch player
@@ -100,6 +106,7 @@ public class Gameplay : MonoBehaviour
                 submitButton.interactable=true;
                 guessInputField.Select();
                 guessInputField.ActivateInputField();
+
             }
         }
     }
@@ -108,7 +115,22 @@ public class Gameplay : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         if (!gameActive) yield break;
-        int computerGuess = Random.Range(minNumber, maxNumber + 1);
+        if (computerGuesses.Count >0)
+        {
+            int lastGuess = computerGuesses[computerGuesses.Count - 1];
+            if (targetISHigher)
+            {
+                computerMinGuess = lastGuess + 1;
+            }
+            else
+            {
+                computerMaxGuess = lastGuess - 1;
+            }
+        }
+        int computerGuess = (computerMinGuess + computerMaxGuess) / 2;
+
+        computerGuesses.Add(computerGuess);
+    
         ProcessGuess(computerGuess, false);
     }
 
@@ -138,6 +160,10 @@ public class Gameplay : MonoBehaviour
         guessInputField.text = " ";
         guessInputField.Select();
         guessInputField.ActivateInputField();
+
+        computerMinGuess = minNumber;
+        computerMaxGuess = maxNumber;
+        computerGuesses = new List<int>();
     }
 
 
